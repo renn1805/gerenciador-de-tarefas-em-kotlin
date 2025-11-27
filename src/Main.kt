@@ -1,44 +1,60 @@
 import jdk.internal.org.jline.utils.ShutdownHooks
 import TaskList.listTask
+import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyles
 import javax.print.attribute.standard.JobPriority
 
-fun greetings(){println("Welcome to Manager!")}
-fun goodbye(){println("Goodbye")}
+fun greetings() {
+    println("Welcome to Manager!")
+}
 
-fun menu(){
-    loop@ while(true) {
-        println("Welcome to Menu! \n\n" +
-                "write 1 for create new task \n" +
-                "write 2 for see all tasks\n" +
-                "write 3 for exit"
+fun goodbye() {
+    println("Goodbye")
+}
+
+fun menu() {
+    loop@ while (true) {
+        println(
+            "Welcome to Menu! \n\n" +
+                    "write 1 for create new task \n" +
+                    "write 2 for see all tasks\n" +
+                    "write 3 for search a task\n" +
+                    "write 4 for remove a task\n" +
+                    "write 5 for exit"
         )
-        when (readln().toInt()){
+        when (readln().toInt()) {
             1 -> createTask()
             2 -> TaskList.showTasks()
-            3 -> loop@ break
+            3 -> TaskList.searchTask()
+            4 -> TaskList.removeTask()
+            5 ->  break@loop
+            else -> {
+                println("\ninvalid option.\n")
+                continue@loop
+            }
         }
     }
 }
 
 sealed class TaskState {
-    object NoStarted: TaskState(){
+    object NoStarted : TaskState() {
         override fun toString(): String = "NoStarted"
     }
-    object InProgress: TaskState(){
+
+    object InProgress : TaskState() {
         override fun toString(): String = "InProgress"
     }
 
-    data class Completed(val dateCompleted: String): TaskState(){
+    data class Completed(val dateCompleted: String) : TaskState() {
         override fun toString(): String = "Completed in $dateCompleted"
     }
 }
 
-data class Task (
+data class Task(
     val taskName: String,
     var taskPriorityLevel: Int,
     var currentTaskState: TaskState
-){
-    fun executeTask(){
+) {
+    fun executeTask() {
         currentTaskState = TaskState.InProgress
     }
 
@@ -46,8 +62,8 @@ data class Task (
         currentTaskState = newState
     }
 
-    fun editPriorityLevelOfTask(){
-        while(true){
+    fun editPriorityLevelOfTask() {
+        while (true) {
             println("set the new level of the task \n1, 2, 3, 4 or 5 \nR:")
             taskPriorityLevel = readln().toInt()
             if (!(taskPriorityLevel < 1 || taskPriorityLevel > 5)) {
@@ -58,33 +74,70 @@ data class Task (
         }
     }
 }
-interface TaskListManager{
+
+interface TaskListManager {
     fun showTasks()
-    fun listTasks(task: Task)
-    fun searchTask(taskName: String)
+    fun listTask(task: Task)
+    fun searchTask()
+    fun removeTask()
+//    fun editTaskState()
+//    fun editPriorityLevelOfTask()
 }
-object TaskList{
+
+object TaskList : TaskListManager {
     var list = mutableListOf<Task>()
 
-    fun listTask (task: Task){
+    override fun listTask(task: Task) {
         list.add(task)
     }
 
-    fun showTasks(){
-        if (!(list.isEmpty())){
+    override fun showTasks() {
+        if (!(list.isEmpty())) {
             println("\n\nThis is your list:")
-            this.list.forEach {
-                TASK -> println(
-                    "  Name of the Task: ${TASK.taskName} \n  Priority of the task: ${TASK.taskPriorityLevel} \n  Progress of the task: ${TASK.currentTaskState.toString()} \n"
+            this.list.forEach { task ->
+                println(
+                    "  Name of the Task: ${task.taskName} \n  Priority of the task: ${task.taskPriorityLevel} \n  Progress of the task: ${task.currentTaskState.toString()} \n"
                 )
             }
-        }else{
+        } else {
             println("do you no have tasks!")
         }
     }
+
+    override fun searchTask() {
+        println("\n\nWrite the name of the task desired. \nR:")
+
+        var taskNameSearch = readln().uppercase()
+        list.forEach { task ->
+            if (task.taskName == taskNameSearch) {
+                println(
+                    "\n Your Task:\n" +
+                            "  Name of the Task: ${task.taskName} \n" +
+                            "  Priority of the task: ${task.taskPriorityLevel} \n" +
+                            "  Progress of the task: ${task.currentTaskState.toString()} \n"
+                )
+            }else println("task not found")
+        }
+    }
+
+    override fun removeTask() {
+        println("\n\nWrite the name of the task to be removed. \nR:")
+        var indexTask: Int?  = null
+
+        var taskNameRemoved = readln().uppercase()
+
+        list.forEachIndexed { index, task ->
+            if (task.taskName == taskNameRemoved) {
+                indexTask = index
+            }
+        }
+
+        if (indexTask != null) list.removeAt(indexTask) else println("task not found")
+
+    }
 }
 
-fun createTask(){
+fun createTask() {
     println("Creating a new task")
 
     println("report the name of the task \n R:")
@@ -93,7 +146,7 @@ fun createTask(){
     println("Inform the level of priority of the task (1 - 5) \n R:")
     var priorityLevel = readln().toInt()
 
-    while(priorityLevel > 5 || priorityLevel < 1){
+    while (priorityLevel > 5 || priorityLevel < 1) {
 
         println("priority level invalid, inform another")
         priorityLevel = readln().toInt()
@@ -103,12 +156,12 @@ fun createTask(){
     var startedTask = readln().toString().uppercase()
     var taskState: TaskState = TaskState.NoStarted
 
-    while(true){
+    while (true) {
 
-        if (startedTask == "Y"){
+        if (startedTask == "Y") {
             taskState = TaskState.InProgress
             break
-        } else if(startedTask == "N"){
+        } else if (startedTask == "N") {
             taskState = TaskState.NoStarted
             break
         } else {
@@ -118,11 +171,12 @@ fun createTask(){
         }
     }
 
-    val task = Task(nameTask,priorityLevel, currentTaskState = taskState)
+    val task = Task(nameTask, priorityLevel, currentTaskState = taskState)
 
     TaskList.listTask(task)
 }
-fun main (){
+
+fun main() {
     greetings()
     menu()
     goodbye()
