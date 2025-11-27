@@ -19,14 +19,18 @@ fun menu() {
                     "write 2 for see all tasks\n" +
                     "write 3 for search a task\n" +
                     "write 4 for remove a task\n" +
-                    "write 5 for exit"
+                    "write 5 for edit a task\n" +
+                    "write 6 for edit a task\n" +
+                    "write 7 for exit"
         )
         when (readln().toInt()) {
             1 -> createTask()
             2 -> TaskList.showTasks()
             3 -> TaskList.searchTask()
             4 -> TaskList.removeTask()
-            5 ->  break@loop
+            5 -> TaskList.editTaskState()
+            6 -> TaskList.editPriorityLevelOfTask()
+            7 ->  break@loop
             else -> {
                 println("\ninvalid option.\n")
                 continue@loop
@@ -80,8 +84,8 @@ interface TaskListManager {
     fun listTask(task: Task)
     fun searchTask()
     fun removeTask()
-//    fun editTaskState()
-//    fun editPriorityLevelOfTask()
+    fun editTaskState()
+    fun editPriorityLevelOfTask()
 }
 
 object TaskList : TaskListManager {
@@ -134,6 +138,53 @@ object TaskList : TaskListManager {
 
         if (indexTask != null) list.removeAt(indexTask) else println("task not found")
 
+    }
+
+    override fun editTaskState() {
+        println("write the name of the task to be edited. \nR:")
+        var taskEditedState = readln().uppercase()
+
+        println("write 1 for conclude the task\n" +
+                "write 2 for start doing the task")
+
+        var taskEdited:Task? = null
+        list.forEach {task -> if (task.taskName == taskEditedState) taskEdited = task  }
+
+        loop@ while(true){
+            when (readln().toInt()) {
+                1 -> {
+                    println("   write the date of the task\n R:")
+                    taskEdited?.currentTaskState = TaskState.Completed(readln())
+                    break@loop
+                }
+                2 -> {
+                    taskEdited?.currentTaskState = TaskState.InProgress
+                    break@loop
+                }
+                else -> {
+                    println("\ninvalid option.\n write another option.\nR:")
+                    continue@loop
+                }
+            }
+        }
+    }
+
+    override fun editPriorityLevelOfTask() {
+        println("\nWrite the name of the your task\nR:")
+        var taskEdited = readln().uppercase()
+
+        println("write from 1 to 5 tho level of the priority\nR:")
+        var levelPriority = readln().toInt()
+
+        loop@ while(true){
+            if (levelPriority < 1 || levelPriority > 5) {
+                println("invalid option.\n write another option.\nR:")
+                levelPriority = readln().toInt()
+            }else break@loop
+
+        }
+
+        list.forEach { task -> if (task.taskName == taskEdited)  task.taskPriorityLevel = levelPriority }
     }
 }
 
