@@ -19,8 +19,8 @@ fun menu() {
                     "write 2 for see all tasks\n" +
                     "write 3 for search a task\n" +
                     "write 4 for remove a task\n" +
-                    "write 5 for edit a task\n" +
-                    "write 6 for edit a task\n" +
+                    "write 5 for edit a task state\n" +
+                    "write 6 for edit a task priority level\n" +
                     "write 7 for exit"
         )
         when (readln().toInt()) {
@@ -120,7 +120,8 @@ object TaskList : TaskListManager {
                             "  Priority of the task: ${task.taskPriorityLevel} \n" +
                             "  Progress of the task: ${task.currentTaskState.toString()} \n"
                 )
-            }else println("task not found")
+
+            }
         }
     }
 
